@@ -1,13 +1,13 @@
 
 import os
 import shutil
-from conans import ConanFile, AutoToolsBuildEnvironment, tools, VisualStudioBuildEnvironment
+from conans import ConanFile, CMake, tools, VisualStudioBuildEnvironment
 from conans.tools import os_info, SystemPackageTool, download, untargz
 
 
 class ConanRecipe(ConanFile):
     name = "libpqxx"
-    version = "5.0.1"
+    version = "6.2.5"
     settings = "os", "compiler", "build_type", "arch"
     description = "Conan package for the libpqxx library"
     url = "https://github.com/jgsogo/conan-libpqxx"
@@ -21,9 +21,6 @@ class ConanRecipe(ConanFile):
     def pq_source_dir(self):
         return os.path.abspath("libpqxx-%s" % self.version)
 
-    def requirements(self):
-        self.requires.add("postgresql/v9.6.5@jgsogo/stable")
-
     def system_requirements(self):
         if os_info.is_linux:
             if os_info.with_apt:
@@ -36,6 +33,7 @@ class ConanRecipe(ConanFile):
             raise NotImplementedError("Compilation of master branch not implemented")
         else:
             url = "https://github.com/jtv/libpqxx/archive/{}.tar.gz".format(self.version)
+            print("source")
             zip_name = 'libpqxx.tar.gz'
             download(url, zip_name)
             untargz(zip_name)
@@ -43,19 +41,10 @@ class ConanRecipe(ConanFile):
 
     def build(self):
         if self.settings.os == "Linux" or self.settings.os == "Macos":
-            options = "--with-postgres-include={}".format(os.path.join(self.deps_cpp_info["postgresql"].rootpath, "include"))
-            options += " --with-postgres-lib={}".format(os.path.join(self.deps_cpp_info["postgresql"].rootpath, "lib"))
-
-            if self.options.disable_documentation:
-                options += " --disable-documentation"
-
-            env = AutoToolsBuildEnvironment(self)
-            with tools.environment_append(env.vars):
-                with tools.chdir(self.pq_source_dir):
-                    add_path = "export PATH=$PATH:{}".format(os.path.join(self.deps_cpp_info["postgresql"].rootpath, "bin"))
-                    self.output.info(options)
-                    self.run("{} && ./configure {}".format(add_path, options))
-                    self.run("make")
+            source_dir = self.pq_source_dir()
+            cmake = CMake(self)
+            cmake.configure(source_folder=source_dir, build_folder='{}/build'.format(source_dir))
+            cmake.build()
         else:
             self.windows_build()
 
@@ -66,7 +55,7 @@ class ConanRecipe(ConanFile):
         if self.settings.os == "Linux":
             # if shared:
             # self.copy(pattern="*.so*", dst="lib", src=os.path.join(self.FOLDER_NAME, "lib", ".libs"))
-            self.copy("*.a", dst="lib", src=os.path.join(self.pq_source_dir, "src", ".libs"))
+            self.copy("*.a", dst="lib", src=os.path.join(self.pq_source_dir, "build", "src"))
         elif self.settings.os == "Windows":
             self.copy("*.lib", dst="lib", src=os.path.join(self.pq_source_dir, "lib"))
             self.copy("*.bin", dst="bin", src=os.path.join(self.pq_source_dir, "lib"))
