@@ -33,7 +33,6 @@ class ConanRecipe(ConanFile):
             raise NotImplementedError("Compilation of master branch not implemented")
         else:
             url = "https://github.com/jtv/libpqxx/archive/{}.tar.gz".format(self.version)
-            print("source")
             zip_name = 'libpqxx.tar.gz'
             download(url, zip_name)
             untargz(zip_name)
@@ -41,7 +40,7 @@ class ConanRecipe(ConanFile):
 
     def build(self):
         if self.settings.os == "Linux" or self.settings.os == "Macos":
-            source_dir = self.pq_source_dir()
+            source_dir = self.pq_source_dir
             cmake = CMake(self)
             cmake.configure(source_folder=source_dir, build_folder='{}/build'.format(source_dir))
             cmake.build()
@@ -62,7 +61,7 @@ class ConanRecipe(ConanFile):
 
     def package_info(self):
         if self.settings.os == "Linux":
-            self.cpp_info.libs = ["pqxx",]
+            self.cpp_info.libs = ["pqxx", 'pq']
         elif self.settings.os == "Windows":
             base_name = "libpqxx"
             if not self.options.shared:
