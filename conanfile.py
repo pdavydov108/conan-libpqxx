@@ -16,6 +16,7 @@ class ConanRecipe(ConanFile):
     options = {"disable_documentation": [True, False],
                "shared": [True, False], }
     default_options = "disable_documentation=True", "shared=False"
+    build_requires = 'cmake_installer/3.12.2@conan/stable'
 
     @property
     def pq_source_dir(self):
