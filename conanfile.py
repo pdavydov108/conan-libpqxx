@@ -50,9 +50,10 @@ class ConanRecipe(ConanFile):
 
     def package(self):
         self.copy("pqxx/*", dst="include", src=os.path.join(self.pq_source_dir, "include"), keep_path=True)
+        self.copy("pqxx/*", dst="include", src=os.path.join(self.pq_source_dir, "build/include"), keep_path=True)
         self.copy(pattern="COPYING", dst="licenses", src=self.pq_source_dir, ignore_case=True, keep_path=False)
 
-        if self.settings.os == "Linux":
+        if self.settings.os == "Linux" or self.settings.os == "Macos":
             # if shared:
             # self.copy(pattern="*.so*", dst="lib", src=os.path.join(self.FOLDER_NAME, "lib", ".libs"))
             self.copy("*.a", dst="lib", src=os.path.join(self.pq_source_dir, "build", "src"))
