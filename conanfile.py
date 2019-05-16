@@ -14,8 +14,9 @@ class ConanRecipe(ConanFile):
     license = "https://github.com/jtv/libpqxx/blob/master/COPYING"
 
     options = {"disable_documentation": [True, False],
-               "shared": [True, False], }
-    default_options = "disable_documentation=True", "shared=False"
+               "shared": [True, False],
+               "tests": [True, False]}
+    default_options = "disable_documentation=True", "shared=False", "tests=False"
     build_requires = 'cmake_installer/3.12.2@conan/stable'
 
     @property
@@ -43,7 +44,10 @@ class ConanRecipe(ConanFile):
         if self.settings.os == "Linux" or self.settings.os == "Macos":
             source_dir = self.pq_source_dir
             cmake = CMake(self)
-            cmake.configure(source_folder=source_dir, build_folder='{}/build'.format(source_dir))
+            definitions = {}
+            if not self.options.tests:
+                definitions = {"BUILD_TEST": "Off"}
+            cmake.configure(source_folder=source_dir, build_folder='{}/build'.format(source_dir), defs=definitions)
             cmake.build()
         else:
             self.windows_build()
