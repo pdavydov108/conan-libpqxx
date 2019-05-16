@@ -66,7 +66,7 @@ class ConanRecipe(ConanFile):
             self.copy("*.bin", dst="bin", src=os.path.join(self.pq_source_dir, "lib"))
 
     def package_info(self):
-        if self.settings.os == "Linux":
+        if self.settings.os == "Linux" or self.settings.os == "Macos":
             self.cpp_info.libs = ["pqxx", 'pq']
         elif self.settings.os == "Windows":
             base_name = "libpqxx"
